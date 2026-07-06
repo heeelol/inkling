@@ -30,3 +30,9 @@ body {
   --sky: #74c0fc; --crayon: #e8590c; --ink: #4a3a2c;
 }
 body { background: var(--cream); color: var(--ink); }
+
+@media print {
+  .no-print { display: none !important; }
+  .book-page { page-break-after: always; box-shadow: none !important; }
+  body { background: #fff; }
+}

@@ -1,17 +1,19 @@
 "use client";
-import { Suspense, useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useStory } from "@/hooks/useStory";
 import { useSpeech } from "@/hooks/useSpeech";
 import { StorybookCanvas } from "@/components/StorybookCanvas";
+import { StorybookExport } from "@/components/StorybookExport";
 import type { DrawingLayerHandle } from "@/components/DrawingLayer";
 
 function PlayInner() {
   const searchParams = useSearchParams();
-  const { current, phase, loading, message, start, takeTurn } = useStory();
+  const { state, current, phase, loading, message, start, takeTurn } = useStory();
   const { speak, speaking } = useSpeech();
   const drawingRef = useRef<DrawingLayerHandle>(null);
   const started = useRef(false);
+  const [finished, setFinished] = useState(false);
 
   useEffect(() => {
     if (started.current) return;
@@ -27,17 +29,30 @@ function PlayInner() {
     drawingRef.current?.clear();
   };
 
+  if (finished && state) return <StorybookExport state={state} />;
+
   return (
-    <StorybookCanvas
-      current={current}
-      phase={phase}
-      loading={loading}
-      message={message}
-      drawingRef={drawingRef}
-      onAction={handleAction}
-      speak={speak}
-      speaking={speaking}
-    />
+    <>
+      <StorybookCanvas
+        current={current}
+        phase={phase}
+        loading={loading}
+        message={message}
+        drawingRef={drawingRef}
+        onAction={handleAction}
+        speak={speak}
+        speaking={speaking}
+      />
+      {state && state.beats.length > 0 && (
+        <button
+          className="no-print"
+          onClick={() => setFinished(true)}
+          style={{ position: "fixed", top: 16, right: 16, background: "#fff", color: "var(--ink)", border: "3px solid var(--sunny)", borderRadius: 14, padding: "10px 16px", fontWeight: 700, cursor: "pointer", zIndex: 10 }}
+        >
+          📖 Finish &amp; make my book
+        </button>
+      )}
+    </>
   );
 }
 
