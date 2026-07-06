@@ -8,6 +8,7 @@ type Props = {
   loading: boolean;
   message: string | null;
   onAction: (action: string) => void;
+  onDraw: () => void;
   speak: (t: string) => void;
   speaking: boolean;
 };
@@ -18,7 +19,7 @@ const choiceStyle: React.CSSProperties = {
   boxShadow: "0 3px 0 rgba(0,0,0,0.08)", textAlign: "left",
 };
 
-export function NarrationPanel({ current, phase, loading, message, onAction, speak, speaking }: Props) {
+export function NarrationPanel({ current, phase, loading, message, onAction, onDraw, speak, speaking }: Props) {
   const [text, setText] = useState("");
   const submitText = () => {
     const t = text.trim();
@@ -68,8 +69,8 @@ export function NarrationPanel({ current, phase, loading, message, onAction, spe
                     {c.label}
                   </button>
                 ))}
-                <button onClick={() => onAction("I drew something new. Add it to the story!")} style={{ ...choiceStyle, background: "var(--sky)" }}>
-                  ✏️ Add my drawing
+                <button onClick={onDraw} style={{ ...choiceStyle, background: "var(--sky)" }}>
+                  ✏️ Draw something
                 </button>
                 <div style={{ display: "flex", gap: 8 }}>
                   <input
