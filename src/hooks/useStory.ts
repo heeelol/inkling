@@ -55,6 +55,7 @@ export function useStory() {
         const parsed = JSON.parse(raw) as StoryState;
         stateRef.current = parsed;
         const last = parsed.beats[parsed.beats.length - 1] ?? null;
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrating from localStorage after mount is intentional
         setUi((u) => ({ ...u, state: parsed, current: last }));
       }
     } catch {

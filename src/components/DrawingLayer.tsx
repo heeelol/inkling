@@ -90,6 +90,7 @@ export const DrawingLayer = forwardRef<DrawingLayerHandle, Props>(function Drawi
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerLeave={onPointerUp}
+        onPointerCancel={onPointerUp}
         style={{ touchAction: "none", width: "100%", height: "100%", cursor: "crosshair", display: "block" }}
       />
       <div

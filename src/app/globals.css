@@ -36,3 +36,14 @@ body { background: var(--cream); color: var(--ink); }
   .book-page { page-break-after: always; box-shadow: none !important; }
   body { background: #fff; }
 }
+
+/* gentle tactile feedback on all buttons */
+button { transition: transform 0.08s ease, filter 0.12s ease; }
+button:hover { filter: brightness(1.04); }
+button:active { transform: translateY(1px); }
+
+/* subtle paper grain for storybook pages */
+.book-page {
+  background-image: radial-gradient(rgba(180,150,100,0.05) 1px, transparent 1px);
+  background-size: 4px 4px;
+}
