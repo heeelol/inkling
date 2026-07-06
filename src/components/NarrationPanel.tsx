@@ -31,6 +31,13 @@ export function NarrationPanel({ current, phase, loading, message, onAction, spe
     <div style={{ padding: 28, display: "flex", flexDirection: "column", height: "100%", gap: 16, boxSizing: "border-box" }}>
       {!current && loading && <p style={{ fontSize: 22, fontFamily: "Georgia, serif" }}>✨ Once upon a time…</p>}
 
+      {!current && !loading && message && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <p style={{ color: "var(--crayon)", fontWeight: 700, fontSize: 20, margin: 0 }}>{message}</p>
+          <p style={{ color: "#a08b6a", margin: 0 }}>Try beginning a different story.</p>
+        </div>
+      )}
+
       {current && (
         <>
           <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>

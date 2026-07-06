@@ -147,7 +147,7 @@ export function useStory() {
       const s = initialState(premise);
       persist(s);
       setUi({ state: s, current: null, phase: "thinking", loading: true, message: null });
-      await takeTurn({ action: "Start the story" });
+      await takeTurn({ action: "Begin the adventure" });
     },
     [persist, takeTurn]
   );
