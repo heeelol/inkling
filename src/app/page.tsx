@@ -1,12 +1,17 @@
+import { SeedCards } from "@/components/SeedCards";
+
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center text-center">
-      <h1 className="text-4xl font-bold" style={{ color: "var(--ink)" }}>
-        Inkling
-      </h1>
-      <p className="mt-4 text-lg" style={{ color: "var(--ink)" }}>
-        Draw yourself into the story.
-      </p>
-    </div>
+    <main
+      style={{
+        minHeight: "100vh", display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "center", gap: 20, padding: 32,
+        background: "var(--cream)",
+      }}
+    >
+      <h1 style={{ fontSize: 64, color: "var(--crayon)", fontFamily: "Georgia, serif", margin: 0 }}>Inkling</h1>
+      <p style={{ fontSize: 22, color: "var(--ink)", marginTop: -8 }}>Draw yourself into the story.</p>
+      <SeedCards />
+    </main>
   );
 }
