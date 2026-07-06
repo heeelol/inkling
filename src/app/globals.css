@@ -24,3 +24,9 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+:root {
+  --cream: #fffdf5; --sunny: #ffe066; --coral: #ff8787;
+  --sky: #74c0fc; --crayon: #e8590c; --ink: #4a3a2c;
+}
+body { background: var(--cream); color: var(--ink); }
