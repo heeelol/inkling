@@ -41,7 +41,7 @@ export function useSoundscape(phase: Phase) {
     if (padOscs.current.length === 0) {
       const filter = ctx.createBiquadFilter();
       filter.type = "lowpass";
-      filter.frequency.value = 700;
+      filter.frequency.value = 480;
       filterRef.current = filter;
 
       const padGain = ctx.createGain();
@@ -49,8 +49,8 @@ export function useSoundscape(phase: Phase) {
       padGainRef.current = padGain;
       filter.connect(padGain).connect(master);
 
-      // Warm, open C-major-ish chord (C3 E3 G3 D4) — calm and childlike.
-      [130.81, 164.81, 196.0, 293.66].forEach((f) => {
+      // Low A-minor drone (A1 A2 C3 E3) — somber, torchlit-hall mood.
+      [55, 110, 130.81, 164.81].forEach((f) => {
         const o = ctx.createOscillator();
         o.type = "sine";
         o.frequency.value = f;
@@ -91,7 +91,7 @@ export function useSoundscape(phase: Phase) {
     const ctx = ctxRef.current;
     const filter = filterRef.current;
     if (!ctx || !filter || !soundOn) return;
-    filter.frequency.setTargetAtTime(phase === "idle" ? 700 : 1250, ctx.currentTime, 0.7);
+    filter.frequency.setTargetAtTime(phase === "idle" ? 480 : 900, ctx.currentTime, 0.7);
   }, [phase, soundOn]);
 
   // Offer to start on the very first interaction, unless the user opted out.

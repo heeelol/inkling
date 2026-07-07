@@ -4,7 +4,7 @@ import { openai, MODELS } from "@/lib/openai";
 export const runtime = "nodejs";
 
 const SYSTEM =
-  "You find the main characters/objects in a children's storybook illustration so a child can poke them. " +
+  "You find the main characters/objects in a fantasy storybook illustration so a player can poke them. " +
   'Reply ONLY with JSON: {"hotspots":[{"label":"the dragon 🐉","x":0.1,"y":0.2,"w":0.3,"h":0.4}]}. ' +
   "x,y = top-left, w,h = size, all fractions of the image (0..1). " +
   "Max 4 hotspots, only clearly visible distinct things, tight boxes, playful 1-3 word labels with a fitting emoji.";

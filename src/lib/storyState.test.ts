@@ -1,32 +1,33 @@
 import { describe, it, expect } from "vitest";
-import { initialState, applyDelta, summarize } from "./storyState";
+import { initialState, applyDelta, summarize, type Beat } from "./storyState";
+
+const beat = (n: string): Beat => ({ narration: n, choices: [], imagePrompt: "" });
 
 describe("storyState", () => {
-  it("initialState seeds premise and empty history", () => {
-    const s = initialState("a dragon who fears the dark");
-    expect(s.premise).toBe("a dragon who fears the dark");
-    expect(s.beats).toEqual([]);
-    expect(s.drawnItems).toEqual([]);
+  it("initialState starts empty", () => {
+    const s = initialState("a knight's oath");
+    expect(s.beats).toHaveLength(0);
+    expect(s.bag).toHaveLength(0);
+    expect(s.events).toHaveLength(0);
   });
 
-  it("applyDelta appends a beat and merges characters + drawn items", () => {
-    const s0 = initialState("p");
-    const s1 = applyDelta(
-      s0,
-      { narration: "Once...", choices: [{ id: "a", label: "Go" }], imagePrompt: "hills" },
-      { newCharacters: ["Ember"], newDrawnItems: [{ label: "red boat", turn: 1 }] }
-    );
-    expect(s1.beats).toHaveLength(1);
-    expect(s1.characters).toContain("Ember");
-    expect(s1.drawnItems.map((d) => d.label)).toContain("red boat");
+  it("applyDelta accumulates and dedupes characters, keeps events and actions", () => {
+    let s = initialState("p");
+    s = applyDelta(s, beat("one"), { newCharacters: ["Alric"], newEvents: ["Met Alric"], action: "Enter the keep" });
+    s = applyDelta(s, beat("two"), { newCharacters: ["Alric", "Mora"], action: "Bow" });
+    expect(s.characters).toEqual(["Alric", "Mora"]);
+    expect(s.events).toEqual(["Met Alric"]);
+    expect(s.actions).toEqual(["Enter the keep", "Bow"]);
+    expect(s.beats).toHaveLength(2);
   });
 
-  it("summarize includes premise, recent narration, characters, drawn items", () => {
-    let s = initialState("space whales");
-    s = applyDelta(s, { narration: "The whale sang.", choices: [], imagePrompt: "x" }, { newCharacters: ["Blu"] });
+  it("summarize includes inventory, chronicle, and recent choices", () => {
+    let s = initialState("the last blade");
+    s = applyDelta(s, beat("You find a sword."), { newEvents: ["Found the moon-blade"], action: "Search the crypt" });
+    s = { ...s, bag: [{ item: { id: "1", name: "Moon-Blade", emoji: "🗡️", w: 1, h: 3 }, x: 0, y: 0, rot: false }] };
     const sum = summarize(s);
-    expect(sum).toContain("space whales");
-    expect(sum).toContain("Blu");
-    expect(sum).toContain("whale sang");
+    expect(sum).toContain("Moon-Blade (1x3)");
+    expect(sum).toContain("Found the moon-blade");
+    expect(sum).toContain("Search the crypt");
   });
 });

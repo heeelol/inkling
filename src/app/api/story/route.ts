@@ -9,16 +9,16 @@ export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   try {
-    const { summary, action, drawingDescription } = await req.json();
+    const { summary, action } = await req.json();
     if (typeof action !== "string") return NextResponse.json({ error: "action required" }, { status: 400 });
 
-    await assertSafe(`${action} ${drawingDescription ?? ""}`);
+    await assertSafe(action);
 
     const completion = await openai.chat.completions.parse({
       model: MODELS.story,
       messages: [
         { role: "system", content: STORY_SYSTEM },
-        { role: "user", content: buildStoryUserPrompt(summary ?? "", action, drawingDescription) },
+        { role: "user", content: buildStoryUserPrompt(summary ?? "", action) },
       ],
       response_format: zodResponseFormat(StoryResponseSchema, "story"),
     });
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(parsed);
   } catch (err) {
     if (err instanceof SafetyError) {
-      return NextResponse.json({ error: "redirect", message: "Let's imagine something friendlier!" });
+      return NextResponse.json({ error: "redirect", message: "The fates refuse that path — choose another." });
     }
     console.error(err);
     return NextResponse.json({ error: "The story got sleepy — try again." }, { status: 500 });

@@ -42,8 +42,8 @@ export async function renderCoverPng(opts: {
   const ctx = canvas.getContext("2d");
   if (!ctx) return null;
 
-  // cream base
-  ctx.fillStyle = "#fffdf5";
+  // parchment base
+  ctx.fillStyle = "#f4ead5";
   ctx.fillRect(0, 0, W, H);
 
   // faded hero art
@@ -74,19 +74,19 @@ export async function renderCoverPng(opts: {
   ctx.textAlign = "center";
 
   // eyebrow
-  ctx.fillStyle = "#a08b6a";
+  ctx.fillStyle = "#8a7455";
   ctx.font = "600 30px Geist, system-ui, sans-serif";
-  ctx.fillText("A N   I N K L I N G   S T O R Y", W / 2, 300);
+  ctx.fillText("A N   I N K L I N G   S A G A", W / 2, 300);
 
   // title
-  ctx.fillStyle = "#e8590c";
-  ctx.font = "700 96px Fredoka, Georgia, serif";
+  ctx.fillStyle = "#c1541a";
+  ctx.font = "700 92px Cinzel, Georgia, serif";
   const lines = wrapLines(ctx, opts.title, W - 220);
   const startY = H / 2 - ((lines.length - 1) * 108) / 2;
   lines.forEach((ln, i) => ctx.fillText(ln, W / 2, startY + i * 108));
 
   // subtitle
-  ctx.fillStyle = "#4a3a2c";
+  ctx.fillStyle = "#2b2018";
   ctx.font = "500 34px Geist, system-ui, sans-serif";
   ctx.fillText(opts.subtitle, W / 2, H - 320);
 

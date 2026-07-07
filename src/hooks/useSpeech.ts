@@ -7,6 +7,10 @@ export function useSpeech() {
   const [spokenText, setSpokenText] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const urlRef = useRef<string | null>(null);
+  // Guards against spam-clicking: each speak() bumps the generation; stale
+  // in-flight fetches see a newer generation and never play.
+  const genRef = useRef(0);
+  const speakingTextRef = useRef<string | null>(null);
 
   const cleanupUrl = () => {
     if (urlRef.current) {
@@ -27,6 +31,7 @@ export function useSpeech() {
     setSpeaking(false);
     setProgress(0);
     setSpokenText(null);
+    speakingTextRef.current = null;
   }, []);
 
   const fallback = useCallback((text: string) => {
@@ -38,7 +43,7 @@ export function useSpeech() {
     u.rate = 0.95;
     // Real word boundaries when the browser provides them.
     u.onboundary = (e) => { if (text.length) setProgress(Math.min(1, e.charIndex / text.length)); };
-    u.onend = () => { setSpeaking(false); setProgress(1); };
+    u.onend = () => { setSpeaking(false); setProgress(1); speakingTextRef.current = null; };
     u.onerror = () => setSpeaking(false);
     setSpeaking(true);
     window.speechSynthesis.speak(u);
@@ -47,9 +52,17 @@ export function useSpeech() {
   const speak = useCallback(
     async (text: string) => {
       if (!text || !text.trim()) return;
+      // Clicking the button for the line already playing = toggle it off.
+      if (speakingTextRef.current === text) {
+        genRef.current++;
+        stop();
+        return;
+      }
+      const gen = ++genRef.current;
       stop();
       setSpeaking(true);
       setSpokenText(text);
+      speakingTextRef.current = text;
       setProgress(0);
       try {
         const res = await fetch("/api/tts", {
@@ -57,8 +70,10 @@ export function useSpeech() {
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ text }),
         });
+        if (gen !== genRef.current) return; // superseded while fetching
         if (!res.ok) throw new Error("tts failed");
         const blob = await res.blob();
+        if (gen !== genRef.current) return;
         if (!blob.size || !blob.type.startsWith("audio")) throw new Error("no audio");
         const url = URL.createObjectURL(blob);
         urlRef.current = url;
@@ -70,12 +85,13 @@ export function useSpeech() {
         audio.onended = () => {
           setSpeaking(false);
           setProgress(1);
+          speakingTextRef.current = null; // finished naturally → next click replays
           cleanupUrl();
         };
-        audio.onerror = () => fallback(text);
+        audio.onerror = () => { if (gen === genRef.current) fallback(text); };
         await audio.play();
       } catch {
-        fallback(text);
+        if (gen === genRef.current) fallback(text);
       }
     },
     [stop, fallback]

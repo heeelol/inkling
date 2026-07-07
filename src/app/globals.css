@@ -26,23 +26,24 @@ body {
 }
 
 :root {
-  --cream: #fffdf5; --sunny: #ffe066; --coral: #ff8787;
-  --sky: #74c0fc; --crayon: #e8590c; --ink: #4a3a2c;
-  --mint: #63e6be; --grape: #b197fc; --rose: #ffa8c5;
-  --paper: #fffaf0;
+  /* dark-fantasy remap of the original palette variables */
+  --cream: #efe4c9; --sunny: #d4a94e; --coral: #b33939;
+  --sky: #7d9fc0; --crayon: #c1541a; --ink: #2b2018;
+  --mint: #8aa86f; --grape: #9b7fc9; --rose: #c98a8a;
+  --paper: #f4ead5;
   --display: var(--font-display), "Georgia", serif;
-  --shadow-soft: 0 10px 30px rgba(74, 58, 44, 0.12);
-  --shadow-lift: 0 18px 50px rgba(74, 58, 44, 0.18);
+  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --shadow-lift: 0 18px 50px rgba(0, 0, 0, 0.5);
 }
 body {
-  color: var(--ink);
+  color: var(--paper);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
-  /* warm, storybook sky — soft radial washes over cream */
+  /* torchlit stone — ember washes over near-black */
   background:
-    radial-gradient(1100px 640px at 12% -8%, rgba(116, 192, 252, 0.20), transparent 60%),
-    radial-gradient(980px 620px at 100% 0%, rgba(255, 168, 197, 0.20), transparent 55%),
-    radial-gradient(900px 700px at 50% 118%, rgba(255, 224, 102, 0.24), transparent 60%),
-    var(--cream);
+    radial-gradient(1100px 640px at 12% -8%, rgba(193, 84, 26, 0.16), transparent 60%),
+    radial-gradient(980px 620px at 100% 0%, rgba(125, 159, 192, 0.10), transparent 55%),
+    radial-gradient(900px 700px at 50% 118%, rgba(212, 169, 78, 0.14), transparent 60%),
+    #171009;
   background-attachment: fixed;
 }
 
@@ -137,12 +138,13 @@ button:active { transform: translateY(1px); }
   animation: shimmer-sweep 1.15s ease-in-out;
 }
 
-/* frosted panel */
+/* frosted parchment panel */
 .glass {
-  background: rgba(255, 253, 245, 0.72);
-  backdrop-filter: blur(10px) saturate(1.1);
-  -webkit-backdrop-filter: blur(10px) saturate(1.1);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(244, 234, 213, 0.88);
+  backdrop-filter: blur(10px) saturate(1.05);
+  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+  border: 1px solid rgba(212, 169, 78, 0.45);
+  color: var(--ink);
 }
 
 /* tidy scrollbars inside the book */

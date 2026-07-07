@@ -4,12 +4,12 @@ import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 
 const SEEDS = [
-  { emoji: "🐉", text: "a dragon who is afraid of the dark", tint: "var(--coral)" },
-  { emoji: "🏰", text: "a lighthouse at the end of the world", tint: "var(--sky)" },
-  { emoji: "🐱", text: "a little cat who wants to fly", tint: "var(--sunny)" },
-  { emoji: "🚪", text: "a secret door in the garden", tint: "var(--mint)" },
-  { emoji: "🐙", text: "a friendly octopus who loves to paint", tint: "var(--grape)" },
-  { emoji: "🌙", text: "a bunny who visits the moon", tint: "var(--rose)" },
+  { emoji: "🏰", text: "a knight sworn to a dying king", tint: "var(--sky)" },
+  { emoji: "🐺", text: "hunted through the Blackbriar woods", tint: "var(--coral)" },
+  { emoji: "🗡️", text: "the last blade of a fallen house", tint: "var(--sunny)" },
+  { emoji: "🕯️", text: "a necromancer's apprentice with cold feet", tint: "var(--grape)" },
+  { emoji: "🐉", text: "a dragon owes you a debt", tint: "var(--mint)" },
+  { emoji: "⛏️", text: "lost in the deep mines of Morr", tint: "var(--rose)" },
 ];
 
 export function SeedCards() {
@@ -36,7 +36,7 @@ export function SeedCards() {
             whileTap={{ scale: 0.97 }}
             style={{
               display: "flex", alignItems: "center", gap: 12, textAlign: "left",
-              background: "#fff", border: "2px solid rgba(224,203,160,0.8)", borderRadius: 18,
+              background: "var(--paper)", border: "2px solid rgba(212,169,78,0.5)", borderRadius: 16,
               padding: "14px 16px", fontSize: 15.5, color: "var(--ink)", cursor: "pointer",
               boxShadow: "var(--shadow-soft)",
             }}
@@ -51,22 +51,22 @@ export function SeedCards() {
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && go(text)}
-          placeholder="…or dream up your own story"
-          style={{ flex: 1, minWidth: 200, padding: "13px 16px", borderRadius: 14, border: "2px solid #e0cba0", fontSize: 16, background: "#fff", color: "var(--ink)" }}
+          placeholder="…or whisper your own dark premise"
+          style={{ flex: 1, minWidth: 200, padding: "13px 16px", borderRadius: 14, border: "2px solid rgba(212,169,78,0.5)", fontSize: 16, background: "var(--paper)", color: "var(--ink)" }}
         />
         <button
           onClick={surprise}
-          title="Surprise me"
-          style={{ background: "#fff", color: "var(--ink)", border: "2px solid #e0cba0", borderRadius: 14, padding: "12px 16px", fontSize: 16, fontWeight: 600, cursor: "pointer" }}
+          title="Tempt fate"
+          style={{ background: "var(--paper)", color: "var(--ink)", border: "2px solid rgba(212,169,78,0.5)", borderRadius: 14, padding: "12px 16px", fontSize: 16, fontWeight: 600, cursor: "pointer" }}
         >
-          🎲 Surprise me
+          🎲 Tempt fate
         </button>
         <motion.button
           onClick={() => go(text)}
           whileTap={{ scale: 0.96 }}
           style={{ background: "var(--crayon)", color: "#fff", border: "none", borderRadius: 14, padding: "12px 24px", fontSize: 16, fontWeight: 700, cursor: "pointer", boxShadow: "var(--shadow-soft)" }}
         >
-          Begin ✨
+          Begin ⚔️
         </motion.button>
       </div>
     </div>

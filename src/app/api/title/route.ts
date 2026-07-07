@@ -4,8 +4,8 @@ import { openai, MODELS } from "@/lib/openai";
 export const runtime = "nodejs";
 
 const SYSTEM =
-  "You name a children's picture book. Given the premise and a few lines of the story, " +
-  "reply with ONE short, whimsical, warm title in Title Case — 2 to 6 words. " +
+  "You name an epic fantasy saga. Given the premise and a few lines of the tale, " +
+  "reply with ONE evocative title in Title Case — 2 to 6 words. " +
   "No quotation marks, no trailing punctuation, no subtitle. Reply with only the title.";
 
 export async function POST(req: NextRequest) {
