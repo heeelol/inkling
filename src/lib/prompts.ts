@@ -18,6 +18,19 @@ export const VISION_SYSTEM =
   "You look at a child's simple crayon drawing and describe what they drew in 1 short phrase " +
   "(e.g. 'a wobbly red boat', 'a smiling yellow sun'). Be generous and imaginative about rough sketches. Reply with only the phrase.";
 
+// Instruction appended when the child contributed a drawing, so the image model
+// reinterprets their rough sketch as polished crayon art rather than leaving a
+// distracting doodle pasted on top of the scene.
+export function buildDrawingIntegration(description?: string): string {
+  const what = description ? `the child's drawing of ${description}` : "the child's drawing";
+  return (
+    `The reference image contains ${what} as a rough crayon sketch. ` +
+    `Reinterpret that sketch as a polished element that belongs in the illustration — ` +
+    `keep its shape, colors and roughly its position, but redraw it cleanly in the same storybook crayon style, ` +
+    `blended naturally into the scene. Do not leave the raw sketch untouched or floating on top.`
+  );
+}
+
 export function buildStoryUserPrompt(summary: string, action: string, drawingDescription?: string): string {
   const drew = drawingDescription ? `\nTHE CHILD JUST DREW: ${drawingDescription}` : "";
   return `${summary}\n\nTHE CHILD CHOSE: ${action}${drew}\n\nContinue the story for the next beat.`;

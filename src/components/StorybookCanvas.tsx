@@ -76,7 +76,7 @@ export function StorybookCanvas({
                 borderRadius: 999, padding: "4px 12px", fontSize: 12, fontWeight: 700, color: "var(--ink)", zIndex: 5,
               }}
             >
-              ✏️ your drawing is in the scene
+              ✨ we&apos;ll paint your idea into the next picture
             </div>
           )}
           {placingDrawing && (

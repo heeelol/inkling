@@ -123,20 +123,44 @@ export function useStory() {
       }
 
       setUi((u) => ({ ...u, phase: "illustrating" }));
+
+      // If the child drew something, hand the sketch (placed where they put it)
+      // to the image model as a reference so it repaints their idea into the
+      // scene — rather than stamping the raw doodle on top of a polished picture.
+      let drawingReference: string | null = null;
+      if (drawingPng) {
+        try {
+          drawingReference = await compositeScene(null, drawingPng, SCENE_W, SCENE_H, placement);
+        } catch {
+          drawingReference = drawingPng;
+        }
+      }
+
       let imageDataUrl: string | null = null;
       try {
-        const r = await postJson("/api/illustrate", { prompt: story.imagePrompt });
+        const r = await postJson("/api/illustrate", {
+          prompt: story.imagePrompt,
+          drawingDataUrl: drawingReference,
+          drawingDescription,
+        });
         const j = (await r.json()) as { imageDataUrl?: string };
         imageDataUrl = j.imageDataUrl ?? null;
       } catch {
         imageDataUrl = null;
       }
 
+      // The AI scene already contains the drawing. Only fall back to pasting the
+      // raw sketch if illustration failed, so the child's idea isn't lost.
+      const integrated = imageDataUrl !== null && drawingPng !== undefined && drawingPng !== null;
       let sceneUrl: string | undefined;
-      try {
-        sceneUrl = await compositeScene(imageDataUrl, drawingPng ?? null, SCENE_W, SCENE_H, placement);
-      } catch {
-        sceneUrl = imageDataUrl ?? undefined;
+      if (imageDataUrl) {
+        sceneUrl = imageDataUrl;
+      } else if (drawingPng) {
+        try {
+          sceneUrl = await compositeScene(null, drawingPng, SCENE_W, SCENE_H, placement);
+        } catch {
+          sceneUrl = undefined;
+        }
       }
 
       const turn = base.beats.length + 1;
@@ -145,8 +169,8 @@ export function useStory() {
         choices: story.choices ?? [],
         imagePrompt: story.imagePrompt ?? "",
         imageUrl: imageDataUrl ?? undefined,
-        drawingUrl: drawingPng ?? undefined,
-        drawingPlacement: placement ?? undefined,
+        drawingUrl: integrated ? undefined : (drawingPng ?? undefined),
+        drawingPlacement: integrated ? undefined : (placement ?? undefined),
       };
       const delta = {
         newCharacters: story.newCharacters ?? [],
