@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { motion } from "motion/react";
 import { LoadingIndicator } from "./LoadingIndicator";
 import type { Beat } from "@/lib/storyState";
 
@@ -65,14 +66,29 @@ export function NarrationPanel({ current, phase, loading, message, onAction, onD
                 : <LoadingIndicator emoji="✨" label="thinking" />
             ) : (
               <>
-                {current.choices.map((c) => (
-                  <button key={c.id} onClick={() => onAction(c.label)} style={choiceStyle}>
+                {current.choices.map((c, i) => (
+                  <motion.button
+                    key={c.id}
+                    onClick={() => onAction(c.label)}
+                    style={choiceStyle}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.08, duration: 0.28 }}
+                    whileTap={{ scale: 0.97 }}
+                  >
                     {c.label}
-                  </button>
+                  </motion.button>
                 ))}
-                <button onClick={onDraw} style={{ ...choiceStyle, background: "var(--sky)" }}>
+                <motion.button
+                  onClick={onDraw}
+                  style={{ ...choiceStyle, background: "var(--sky)" }}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: current.choices.length * 0.08, duration: 0.28 }}
+                  whileTap={{ scale: 0.97 }}
+                >
                   ✏️ Draw something
-                </button>
+                </motion.button>
                 <div style={{ display: "flex", gap: 8 }}>
                   <input
                     value={text}

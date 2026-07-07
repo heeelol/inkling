@@ -31,6 +31,16 @@ export function buildDrawingIntegration(description?: string): string {
   );
 }
 
+// Appended when a previous illustration is handed to the image model, so
+// recurring characters and settings stay visually consistent page to page.
+export function buildContinuity(): string {
+  return (
+    "One reference image is the previous page of this storybook. " +
+    "Keep any recurring characters, their outfits, and the overall setting visually consistent with it, " +
+    "in the same crayon storybook style — but show the NEW moment described above."
+  );
+}
+
 export function buildStoryUserPrompt(summary: string, action: string, drawingDescription?: string): string {
   const drew = drawingDescription ? `\nTHE CHILD JUST DREW: ${drawingDescription}` : "";
   return `${summary}\n\nTHE CHILD CHOSE: ${action}${drew}\n\nContinue the story for the next beat.`;

@@ -136,12 +136,16 @@ export function useStory() {
         }
       }
 
+      // Hand the previous page to the model so characters/setting stay consistent.
+      const previousScene = base.beats[base.beats.length - 1]?.imageUrl ?? null;
+
       let imageDataUrl: string | null = null;
       try {
         const r = await postJson("/api/illustrate", {
           prompt: story.imagePrompt,
           drawingDataUrl: drawingReference,
           drawingDescription,
+          sceneDataUrl: previousScene,
         });
         const j = (await r.json()) as { imageDataUrl?: string };
         imageDataUrl = j.imageDataUrl ?? null;

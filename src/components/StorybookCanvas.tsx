@@ -5,6 +5,7 @@ import { DrawingLayer, type DrawingLayerHandle } from "./DrawingLayer";
 import { DrawingPlacer } from "./DrawingPlacer";
 import { NarrationPanel } from "./NarrationPanel";
 import { LoadingIndicator } from "./LoadingIndicator";
+import { Sparkles } from "./Sparkles";
 import type { Placement } from "@/lib/composite";
 import type { Beat } from "@/lib/storyState";
 
@@ -19,6 +20,7 @@ type Props = {
   drawerOpen: boolean;
   drawDescription: string;
   placingDrawing: string | null;
+  sparkleKey: string | number | null;
   onOpenDraw: () => void;
   onStartPlacement: () => void;
   onCancelDraw: () => void;
@@ -43,6 +45,7 @@ export function StorybookCanvas({
   drawerOpen,
   drawDescription,
   placingDrawing,
+  sparkleKey,
   onOpenDraw,
   onStartPlacement,
   onCancelDraw,
@@ -65,9 +68,22 @@ export function StorybookCanvas({
         <div
           style={{
             flex: 1, aspectRatio: "1 / 1", position: "relative",
-            background: displayScene ? `center/cover no-repeat url(${displayScene})` : "var(--cream)",
+            background: "var(--cream)", overflow: "hidden",
           }}
         >
+          <AnimatePresence>
+            {displayScene && (
+              <motion.div
+                key={displayScene}
+                initial={{ opacity: 0, scale: 1.05 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                style={{ position: "absolute", inset: 0, background: `center/cover no-repeat url(${displayScene})` }}
+              />
+            )}
+          </AnimatePresence>
+          {sparkleKey != null && <Sparkles trigger={sparkleKey} />}
           {phase === "illustrating" && <LoadingIndicator variant="badge" emoji="🖍️" label="painting" />}
           {hasStagedDrawing && !placingDrawing && (
             <div

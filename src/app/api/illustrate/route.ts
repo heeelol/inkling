@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { toFile } from "openai";
+import { toFile, type Uploadable } from "openai";
 import { openai, MODELS } from "@/lib/openai";
-import { CRAYON_STYLE_PRESET, buildDrawingIntegration } from "@/lib/prompts";
+import { CRAYON_STYLE_PRESET, buildDrawingIntegration, buildContinuity } from "@/lib/prompts";
 import { assertSafe, SafetyError } from "@/lib/moderation";
 
 export const runtime = "nodejs";
@@ -11,24 +11,36 @@ function dataUrlToBuffer(dataUrl: string): Buffer {
   return Buffer.from(dataUrl.slice(comma + 1), "base64");
 }
 
+const isImageDataUrl = (v: unknown): v is string =>
+  typeof v === "string" && v.startsWith("data:image");
+
 export async function POST(req: NextRequest) {
   try {
-    const { prompt, drawingDataUrl, drawingDescription } = await req.json();
+    const { prompt, drawingDataUrl, drawingDescription, sceneDataUrl } = await req.json();
     if (typeof prompt !== "string") return NextResponse.json({ error: "prompt required" }, { status: 400 });
     await assertSafe(prompt);
     if (typeof drawingDescription === "string") await assertSafe(drawingDescription);
 
-    const hasDrawing = typeof drawingDataUrl === "string" && drawingDataUrl.startsWith("data:image");
+    const hasDrawing = isImageDataUrl(drawingDataUrl);
+    const hasScene = isImageDataUrl(sceneDataUrl);
 
     let b64: string | undefined;
-    if (hasDrawing) {
-      // The child drew something — use it as a reference so the model paints
-      // their idea into the scene in crayon style, instead of a pasted doodle.
-      const image = await toFile(dataUrlToBuffer(drawingDataUrl), "drawing.png", { type: "image/png" });
+    if (hasDrawing || hasScene) {
+      // Reference-guided edit: previous page (for consistent characters/setting)
+      // and/or the child's sketch (to paint their idea into the scene).
+      const images: Uploadable[] = [];
+      if (hasScene) images.push(await toFile(dataUrlToBuffer(sceneDataUrl), "scene.png", { type: "image/png" }));
+      if (hasDrawing) images.push(await toFile(dataUrlToBuffer(drawingDataUrl), "drawing.png", { type: "image/png" }));
+
+      const parts = [prompt + "."];
+      if (hasScene) parts.push(buildContinuity());
+      if (hasDrawing) parts.push(buildDrawingIntegration(drawingDescription));
+      parts.push(CRAYON_STYLE_PRESET);
+
       const result = await openai.images.edit({
         model: MODELS.image,
-        image,
-        prompt: `${prompt}. ${buildDrawingIntegration(drawingDescription)} ${CRAYON_STYLE_PRESET}`,
+        image: images,
+        prompt: parts.join(" "),
         size: "1024x1024",
       });
       b64 = result.data?.[0]?.b64_json;
