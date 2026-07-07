@@ -33,6 +33,8 @@ type Props = {
   onAction: (action: string) => void;
   speak: (t: string) => void;
   speaking: boolean;
+  speechProgress: number;
+  spokenText: string | null;
 };
 
 const SCENE = 1024;
@@ -61,26 +63,24 @@ export function StorybookCanvas({
   onAction,
   speak,
   speaking,
+  speechProgress,
+  spokenText,
 }: Props) {
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+    <div className="book-stage">
       <motion.div
+        className="book"
         initial={{ opacity: 0, y: 20, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
         style={{
-          display: "flex", width: "min(1100px, 96vw)", background: "#fff", borderRadius: 20,
+          background: "#fff", borderRadius: 20,
           boxShadow: "var(--shadow-lift), 0 0 0 8px #fff, 0 0 0 10px rgba(224,203,160,0.55)",
           overflow: "hidden",
         }}
       >
         {/* left page: the main visual */}
-        <div
-          style={{
-            flex: 1, aspectRatio: "1 / 1", position: "relative",
-            background: "var(--cream)", overflow: "hidden",
-          }}
-        >
+        <div className="book-left" style={{ background: "var(--cream)", overflow: "hidden" }}>
           <AnimatePresence>
             {displayScene && (
               <motion.div
@@ -150,10 +150,10 @@ export function StorybookCanvas({
         </div>
 
         {/* spine */}
-        <div style={{ width: 6, background: "linear-gradient(90deg,rgba(0,0,0,0.08),transparent 30%,transparent 70%,rgba(0,0,0,0.08)), linear-gradient(#e6d2a8,#f3e6c6)" }} />
+        <div className="book-spine" style={{ width: 6, background: "linear-gradient(90deg,rgba(0,0,0,0.08),transparent 30%,transparent 70%,rgba(0,0,0,0.08)), linear-gradient(#e6d2a8,#f3e6c6)" }} />
 
         {/* right page: narration */}
-        <div style={{ flex: 1, aspectRatio: "1 / 1", position: "relative", display: "flex", flexDirection: "column", minWidth: 0 }}>
+        <div className="book-right" style={{ display: "flex", flexDirection: "column" }}>
           {characters.length > 0 && (
             <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", padding: "12px 16px 0", flexShrink: 0 }}>
               <span style={{ fontSize: 12, fontWeight: 700, color: "#a08b6a" }}>✨ cast</span>
@@ -184,6 +184,8 @@ export function StorybookCanvas({
                 onDraw={onOpenDraw}
                 speak={speak}
                 speaking={speaking}
+                speechProgress={speechProgress}
+                spokenText={spokenText}
               />
             </motion.div>
           </AnimatePresence>

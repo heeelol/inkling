@@ -148,3 +148,17 @@ button:active { transform: translateY(1px); }
 /* tidy scrollbars inside the book */
 .book-page::-webkit-scrollbar { width: 8px; }
 .book-page::-webkit-scrollbar-thumb { background: rgba(224, 203, 160, 0.7); border-radius: 999px; }
+
+/* ---- responsive storybook layout ---- */
+.book-stage { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.book { display: flex; width: min(1100px, 96vw); }
+.book-left, .book-right { flex: 1; position: relative; min-width: 0; aspect-ratio: 1 / 1; }
+
+@media (max-width: 760px) {
+  .book-stage { align-items: flex-start; padding: 72px 10px 20px; }
+  .book { flex-direction: column; width: 96vw; }
+  .book-spine { display: none; }
+  .book-right { aspect-ratio: auto; }        /* let the story text set its own height */
+  .book-left { border-bottom: 3px solid rgba(224, 203, 160, 0.6); }
+  .finish-label { display: none; }           /* icon-only finish button on phones */
+}

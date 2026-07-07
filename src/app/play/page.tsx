@@ -15,7 +15,7 @@ const SCENE = 1024;
 function PlayInner() {
   const searchParams = useSearchParams();
   const { state, current, phase, loading, message, start, takeTurn } = useStory();
-  const { speak, stop, speaking } = useSpeech();
+  const { speak, stop, speaking, progress: speechProgress, spokenText } = useSpeech();
   const { soundOn, toggleSound, chime, sparkle } = useSoundscape(phase);
   const drawingRef = useRef<DrawingLayerHandle>(null);
   const started = useRef(false);
@@ -157,8 +157,10 @@ function PlayInner() {
         onAction={handleAction}
         speak={speak}
         speaking={speaking}
+        speechProgress={speechProgress}
+        spokenText={spokenText}
       />
-      <div className="no-print glass" style={{ position: "fixed", top: 16, left: 16, display: "flex", gap: 6, zIndex: 10, padding: 6, borderRadius: 16, boxShadow: "var(--shadow-soft)" }}>
+      <div className="no-print glass fixed-controls" style={{ position: "fixed", top: 16, left: 16, display: "flex", gap: 6, zIndex: 10, padding: 6, borderRadius: 16, boxShadow: "var(--shadow-soft)" }}>
         <a href="/" title="Home" aria-label="Home" style={{ ...toggleBtnStyle, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center" }}>🏠</a>
         <button onClick={toggleSound} title={soundOn ? "Turn music off" : "Turn music on"} aria-label="Toggle music" style={toggleBtnStyle}>
           {soundOn ? "🔊" : "🔇"}
@@ -169,13 +171,16 @@ function PlayInner() {
       </div>
       {state && state.beats.length > 0 && (
         <motion.button
-          className="no-print"
+          className="no-print finish-btn"
           onClick={() => setFinished(true)}
+          aria-label="Finish and make my book"
+          title="Finish and make my book"
           whileHover={{ y: -2 }}
           whileTap={{ scale: 0.97 }}
           style={{ position: "fixed", top: 16, right: 16, background: "var(--crayon)", color: "#fff", border: "none", borderRadius: 14, padding: "11px 18px", fontWeight: 700, cursor: "pointer", zIndex: 10, boxShadow: "var(--shadow-soft)" }}
         >
-          📖 Finish &amp; make my book
+          <span aria-hidden>📖</span>
+          <span className="finish-label">&nbsp;Finish &amp; make my book</span>
         </motion.button>
       )}
     </>

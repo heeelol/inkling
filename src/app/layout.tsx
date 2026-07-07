@@ -21,6 +21,16 @@ const fredoka = Fredoka({
 export const metadata: Metadata = {
   title: "Inkling — draw yourself into the story",
   description: "An AI picture book where your child's drawings come to life inside the story.",
+  openGraph: {
+    title: "Inkling — draw yourself into the story",
+    description: "An AI picture book where your child's drawings come to life inside the story.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Inkling — draw yourself into the story",
+    description: "An AI picture book where your child's drawings come to life inside the story.",
+  },
 };
 
 export default function RootLayout({

@@ -13,7 +13,46 @@ type Props = {
   onDraw: () => void;
   speak: (t: string) => void;
   speaking: boolean;
+  speechProgress: number;
+  spokenText: string | null;
 };
+
+// Karaoke-style narration: which word is being read right now, based on how far
+// through the audio we are (weighted by word length).
+function KaraokeText({ text, progress }: { text: string; progress: number }) {
+  const tokens = text.split(/(\s+)/);
+  const totalChars = text.replace(/\s+/g, "").length || 1;
+  const target = progress * totalChars;
+  let seen = 0;
+  let active = -1;
+  for (let i = 0; i < tokens.length; i++) {
+    if (/^\s+$/.test(tokens[i])) continue;
+    seen += tokens[i].length;
+    if (seen >= target) { active = i; break; }
+  }
+  return (
+    <span>
+      {tokens.map((tk, i) => {
+        if (/^\s+$/.test(tk)) return <span key={i}>{tk}</span>;
+        const isActive = i === active;
+        const isPast = active !== -1 && i < active;
+        return (
+          <span
+            key={i}
+            style={{
+              background: isActive ? "var(--sunny)" : "transparent",
+              borderRadius: 6, padding: isActive ? "0 3px" : 0,
+              color: isPast ? "var(--ink)" : isActive ? "var(--ink)" : "#8a7860",
+              transition: "background 0.12s, color 0.12s",
+            }}
+          >
+            {tk}
+          </span>
+        );
+      })}
+    </span>
+  );
+}
 
 const choiceStyle: React.CSSProperties = {
   background: "var(--sunny)", color: "var(--ink)", border: "3px solid #fff",
@@ -21,8 +60,9 @@ const choiceStyle: React.CSSProperties = {
   boxShadow: "0 3px 0 rgba(0,0,0,0.08)", textAlign: "left",
 };
 
-export function NarrationPanel({ current, phase, loading, message, onAction, onDraw, speak, speaking }: Props) {
+export function NarrationPanel({ current, phase, loading, message, onAction, onDraw, speak, speaking, speechProgress, spokenText }: Props) {
   const [text, setText] = useState("");
+  const karaoke = speaking && spokenText === current?.narration;
   const submitText = () => {
     const t = text.trim();
     if (!t) return;
@@ -44,8 +84,8 @@ export function NarrationPanel({ current, phase, loading, message, onAction, onD
       {current && (
         <>
           <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-            <p style={{ fontSize: 22, lineHeight: 1.6, color: "var(--ink)", fontFamily: "Georgia, serif", margin: 0 }}>
-              {current.narration}
+            <p style={{ fontSize: 22, lineHeight: 1.7, color: "var(--ink)", fontFamily: "Georgia, serif", margin: 0 }}>
+              {karaoke ? <KaraokeText text={current.narration} progress={speechProgress} /> : current.narration}
             </p>
             <button
               onClick={() => speak(current.narration)}
