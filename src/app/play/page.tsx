@@ -8,6 +8,7 @@ import { useSoundscape } from "@/hooks/useSoundscape";
 import { StorybookCanvas } from "@/components/StorybookCanvas";
 import { StorybookExport } from "@/components/StorybookExport";
 import type { DrawingLayerHandle } from "@/components/DrawingLayer";
+import type { Hotspot } from "@/components/SceneHotspots";
 import { compositeScene, type Placement } from "@/lib/composite";
 
 const SCENE = 1024;
@@ -31,6 +32,7 @@ function PlayInner() {
   const [stagedPlacement, setStagedPlacement] = useState<Placement | null>(null);
   const [stagedDescription, setStagedDescription] = useState<string | null>(null);
   const [sceneOverride, setSceneOverride] = useState<string | null>(null);
+  const [hotspots, setHotspots] = useState<Hotspot[]>([]);
 
   useEffect(() => {
     if (started.current) return;
@@ -55,6 +57,28 @@ function PlayInner() {
   }, [current?.narration, loading, voiceOn, chime, speak, sparkle]);
 
   const displayScene = sceneOverride ?? current?.sceneUrl ?? current?.imageUrl ?? null;
+
+  // Find poke-able characters in each fresh illustration (non-blocking).
+  useEffect(() => {
+    const scene = current?.sceneUrl ?? current?.imageUrl;
+    setHotspots([]);
+    if (!scene || !scene.startsWith("data:image")) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch("/api/hotspots", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ imageDataUrl: scene }),
+        });
+        const j = (await r.json()) as { hotspots?: Hotspot[] };
+        if (!cancelled && j.hotspots) setHotspots(j.hotspots);
+      } catch {
+        /* picture just isn't poke-able this page */
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [current?.sceneUrl, current?.imageUrl]);
 
   const toggleVoice = () => {
     setVoiceOn((v) => {
@@ -148,6 +172,8 @@ function PlayInner() {
         characters={state?.characters ?? []}
         pageNumber={state?.beats.length ?? 0}
         reveal={reveal}
+        hotspots={sceneOverride ? [] : hotspots}
+        onPoke={chime}
         onOpenDraw={() => setDrawerOpen(true)}
         onStartPlacement={startPlacement}
         onCancelDraw={cancelDraw}

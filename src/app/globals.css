@@ -149,6 +149,23 @@ button:active { transform: translateY(1px); }
 .book-page::-webkit-scrollbar { width: 8px; }
 .book-page::-webkit-scrollbar-thumb { background: rgba(224, 203, 160, 0.7); border-radius: 999px; }
 
+/* ---- poke-able scene hotspots ---- */
+@keyframes hotspot-wiggle {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25%      { transform: rotate(-2.5deg) scale(1.045) translateY(-2px); }
+  50%      { transform: rotate(0deg) scale(1.06); }
+  75%      { transform: rotate(2.5deg) scale(1.045) translateY(-2px); }
+}
+.hotspot-patch {
+  animation: hotspot-wiggle 0.85s ease-in-out infinite;
+  transform-origin: 50% 85%;
+  /* feathered edges so the animated crop melts into the still image */
+  -webkit-mask-image: radial-gradient(ellipse 72% 72% at 50% 50%, #000 55%, transparent 100%);
+  mask-image: radial-gradient(ellipse 72% 72% at 50% 50%, #000 55%, transparent 100%);
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.12));
+}
+@media (prefers-reduced-motion: reduce) { .hotspot-patch { animation: none; } }
+
 /* ---- responsive storybook layout ---- */
 .book-stage { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
 .book { display: flex; width: min(1100px, 96vw); }

@@ -6,6 +6,7 @@ import { DrawingPlacer } from "./DrawingPlacer";
 import { NarrationPanel } from "./NarrationPanel";
 import { LoadingIndicator } from "./LoadingIndicator";
 import { Sparkles } from "./Sparkles";
+import { SceneHotspots, type Hotspot } from "./SceneHotspots";
 import type { Placement } from "@/lib/composite";
 import type { Beat } from "@/lib/storyState";
 
@@ -24,6 +25,8 @@ type Props = {
   characters: string[];
   pageNumber: number;
   reveal: boolean;
+  hotspots: Hotspot[];
+  onPoke?: () => void;
   onOpenDraw: () => void;
   onStartPlacement: () => void;
   onCancelDraw: () => void;
@@ -54,6 +57,8 @@ export function StorybookCanvas({
   characters,
   pageNumber,
   reveal,
+  hotspots,
+  onPoke,
   onOpenDraw,
   onStartPlacement,
   onCancelDraw,
@@ -93,6 +98,9 @@ export function StorybookCanvas({
               />
             )}
           </AnimatePresence>
+          {displayScene && phase === "idle" && !placingDrawing && hotspots.length > 0 && (
+            <SceneHotspots sceneUrl={displayScene} hotspots={hotspots} onPoke={onPoke} />
+          )}
           {sparkleKey != null && <Sparkles trigger={sparkleKey} />}
           {phase === "illustrating" && <LoadingIndicator variant="badge" emoji="🖍️" label="painting" />}
           {hasStagedDrawing && !placingDrawing && (
