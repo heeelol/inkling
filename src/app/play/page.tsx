@@ -1,5 +1,6 @@
 "use client";
 import { Suspense, useEffect, useRef, useState } from "react";
+import { motion } from "motion/react";
 import { useSearchParams } from "next/navigation";
 import { useStory } from "@/hooks/useStory";
 import { useSpeech } from "@/hooks/useSpeech";
@@ -19,7 +20,9 @@ function PlayInner() {
   const drawingRef = useRef<DrawingLayerHandle>(null);
   const started = useRef(false);
   const lastNarrated = useRef<string | null>(null);
+  const pendingReveal = useRef(false);
   const [finished, setFinished] = useState(false);
+  const [reveal, setReveal] = useState(false);
   const [voiceOn, setVoiceOn] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawDescription, setDrawDescription] = useState("");
@@ -43,7 +46,13 @@ function PlayInner() {
     lastNarrated.current = narration;
     chime();
     if (voiceOn) speak(narration);
-  }, [current?.narration, loading, voiceOn, chime, speak]);
+    if (pendingReveal.current) {
+      pendingReveal.current = false;
+      sparkle();
+      setReveal(true);
+      window.setTimeout(() => setReveal(false), 1900);
+    }
+  }, [current?.narration, loading, voiceOn, chime, speak, sparkle]);
 
   const displayScene = sceneOverride ?? current?.sceneUrl ?? current?.imageUrl ?? null;
 
@@ -55,8 +64,8 @@ function PlayInner() {
   };
 
   const toggleBtnStyle: React.CSSProperties = {
-    width: 44, height: 44, borderRadius: 12, background: "#fff", color: "var(--ink)",
-    border: "3px solid var(--sunny)", fontSize: 18, cursor: "pointer", lineHeight: 1,
+    width: 40, height: 40, borderRadius: 12, background: "rgba(255,255,255,0.7)", color: "var(--ink)",
+    border: "1px solid rgba(224,203,160,0.6)", fontSize: 19, cursor: "pointer", lineHeight: 1,
   };
 
   const cancelDraw = () => {
@@ -106,6 +115,7 @@ function PlayInner() {
 
   const handleAction = async (action: string) => {
     if (loading) return;
+    pendingReveal.current = stagedDrawing !== null;
     await takeTurn({
       action,
       drawingPng: stagedDrawing,
@@ -135,6 +145,9 @@ function PlayInner() {
         drawDescription={drawDescription}
         placingDrawing={placingDrawing}
         sparkleKey={current?.narration ?? null}
+        characters={state?.characters ?? []}
+        pageNumber={state?.beats.length ?? 0}
+        reveal={reveal}
         onOpenDraw={() => setDrawerOpen(true)}
         onStartPlacement={startPlacement}
         onCancelDraw={cancelDraw}
@@ -145,7 +158,8 @@ function PlayInner() {
         speak={speak}
         speaking={speaking}
       />
-      <div className="no-print" style={{ position: "fixed", top: 16, left: 16, display: "flex", gap: 8, zIndex: 10 }}>
+      <div className="no-print glass" style={{ position: "fixed", top: 16, left: 16, display: "flex", gap: 6, zIndex: 10, padding: 6, borderRadius: 16, boxShadow: "var(--shadow-soft)" }}>
+        <a href="/" title="Home" aria-label="Home" style={{ ...toggleBtnStyle, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center" }}>🏠</a>
         <button onClick={toggleSound} title={soundOn ? "Turn music off" : "Turn music on"} aria-label="Toggle music" style={toggleBtnStyle}>
           {soundOn ? "🔊" : "🔇"}
         </button>
@@ -154,13 +168,15 @@ function PlayInner() {
         </button>
       </div>
       {state && state.beats.length > 0 && (
-        <button
+        <motion.button
           className="no-print"
           onClick={() => setFinished(true)}
-          style={{ position: "fixed", top: 16, right: 16, background: "#fff", color: "var(--ink)", border: "3px solid var(--sunny)", borderRadius: 14, padding: "10px 16px", fontWeight: 700, cursor: "pointer", zIndex: 10 }}
+          whileHover={{ y: -2 }}
+          whileTap={{ scale: 0.97 }}
+          style={{ position: "fixed", top: 16, right: 16, background: "var(--crayon)", color: "#fff", border: "none", borderRadius: 14, padding: "11px 18px", fontWeight: 700, cursor: "pointer", zIndex: 10, boxShadow: "var(--shadow-soft)" }}
         >
           📖 Finish &amp; make my book
-        </button>
+        </motion.button>
       )}
     </>
   );

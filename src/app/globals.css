@@ -28,8 +28,23 @@ body {
 :root {
   --cream: #fffdf5; --sunny: #ffe066; --coral: #ff8787;
   --sky: #74c0fc; --crayon: #e8590c; --ink: #4a3a2c;
+  --mint: #63e6be; --grape: #b197fc; --rose: #ffa8c5;
+  --paper: #fffaf0;
+  --display: var(--font-display), "Georgia", serif;
+  --shadow-soft: 0 10px 30px rgba(74, 58, 44, 0.12);
+  --shadow-lift: 0 18px 50px rgba(74, 58, 44, 0.18);
 }
-body { background: var(--cream); color: var(--ink); }
+body {
+  color: var(--ink);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  /* warm, storybook sky — soft radial washes over cream */
+  background:
+    radial-gradient(1100px 640px at 12% -8%, rgba(116, 192, 252, 0.20), transparent 60%),
+    radial-gradient(980px 620px at 100% 0%, rgba(255, 168, 197, 0.20), transparent 55%),
+    radial-gradient(900px 700px at 50% 118%, rgba(255, 224, 102, 0.24), transparent 60%),
+    var(--cream);
+  background-attachment: fixed;
+}
 
 @media print {
   .no-print { display: none !important; }
@@ -95,6 +110,41 @@ button:active { transform: translateY(1px); }
 
 /* respect users who prefer no motion */
 @media (prefers-reduced-motion: reduce) {
-  .inkling-wiggle, .inkling-dots > i, .inkling-bar::after { animation: none; }
+  .inkling-wiggle, .inkling-dots > i, .inkling-bar::after,
+  .float-slow, .float-mid, .shimmer-sweep::after { animation: none !important; }
   .inkling-dots > i { opacity: 1; }
 }
+
+/* ---- decorative + polish ---- */
+.font-display { font-family: var(--display); }
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); }
+  50%      { transform: translateY(-18px) rotate(var(--rot, 0deg)); }
+}
+.float-slow { animation: float-y 7s ease-in-out infinite; }
+.float-mid  { animation: float-y 5s ease-in-out infinite; }
+
+/* magic shimmer sweep used when a drawing becomes a real illustration */
+@keyframes shimmer-sweep {
+  0%   { transform: translateX(-120%) skewX(-12deg); }
+  100% { transform: translateX(220%)  skewX(-12deg); }
+}
+.shimmer-sweep { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.shimmer-sweep::after {
+  content: ""; position: absolute; top: 0; bottom: 0; width: 45%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,0.75), transparent);
+  animation: shimmer-sweep 1.15s ease-in-out;
+}
+
+/* frosted panel */
+.glass {
+  background: rgba(255, 253, 245, 0.72);
+  backdrop-filter: blur(10px) saturate(1.1);
+  -webkit-backdrop-filter: blur(10px) saturate(1.1);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+/* tidy scrollbars inside the book */
+.book-page::-webkit-scrollbar { width: 8px; }
+.book-page::-webkit-scrollbar-thumb { background: rgba(224, 203, 160, 0.7); border-radius: 999px; }

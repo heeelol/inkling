@@ -1,5 +1,6 @@
 "use client";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { getStroke } from "perfect-freehand";
 
 export type DrawingLayerHandle = {
@@ -37,6 +38,7 @@ export const DrawingLayer = forwardRef<DrawingLayerHandle, Props>(function Drawi
   const [size, setSize] = useState(SIZES[1].value);
   const [brush, setBrush] = useState<BrushKey>("crayon");
   const [canUndo, setCanUndo] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
 
   const colorRef = useRef(color);
   const erasingRef = useRef(erasing);
@@ -182,58 +184,81 @@ export const DrawingLayer = forwardRef<DrawingLayerHandle, Props>(function Drawi
         style={{ touchAction: "none", width: "100%", height: "100%", cursor: "crosshair", display: "block" }}
       />
 
-      <div
-        style={{
-          position: "absolute", bottom: 8, left: "50%", transform: "translateX(-50%)",
-          display: "flex", flexDirection: "column", gap: 6, alignItems: "center",
-          background: "rgba(255,255,255,0.88)", padding: "8px 10px", borderRadius: 16,
-          boxShadow: "0 2px 10px rgba(0,0,0,0.12)", maxWidth: "94%",
-        }}
-      >
-        {/* colors + eraser */}
-        <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
-          {PALETTE.map((c) => (
-            <button
-              key={c}
-              onClick={() => { setColor(c); setErasing(false); }}
-              aria-label={`color ${c}`}
-              style={{
-                width: 22, height: 22, borderRadius: "50%", background: c,
-                border: color === c && !erasing ? "3px solid #4a3a2c" : "2px solid #fff", cursor: "pointer",
-              }}
-            />
-          ))}
-          <button onClick={() => setErasing(true)} aria-label="eraser" title="Eraser" style={toolBtn(erasing)}>🩹</button>
-        </div>
-
-        {/* brushes + sizes + undo/clear */}
-        <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
-          {(Object.keys(BRUSHES) as BrushKey[]).map((k) => (
-            <button
-              key={k}
-              onClick={() => { setBrush(k); setErasing(false); }}
-              aria-label={BRUSHES[k].name}
-              title={BRUSHES[k].name}
-              style={toolBtn(brush === k && !erasing)}
-            >{BRUSHES[k].emoji}</button>
-          ))}
-          <span style={{ width: 1, height: 22, background: "#e0cba0" }} />
-          {SIZES.map((s) => (
-            <button
-              key={s.value}
-              onClick={() => setSize(s.value)}
-              aria-label={`${s.label} brush`}
-              title={s.label}
-              style={toolBtn(size === s.value)}
+      {/* pop-up tool tray — hidden by default so it never blocks the drawing */}
+      <div style={{ position: "absolute", bottom: 10, left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+        <AnimatePresence>
+          {toolsOpen && (
+            <motion.div
+              key="tools"
+              initial={{ opacity: 0, y: 10, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.96 }}
+              transition={{ duration: 0.18 }}
+              className="glass"
+              style={{ display: "flex", flexDirection: "column", gap: 8, padding: "10px 12px", borderRadius: 18, boxShadow: "var(--shadow-lift)", maxWidth: "min(340px, 88vw)" }}
             >
-              <span style={{ width: Math.min(s.value / 2.6, 16), height: Math.min(s.value / 2.6, 16), minWidth: 4, minHeight: 4, borderRadius: "50%", background: "#4a3a2c", display: "block" }} />
-            </button>
-          ))}
-          <span style={{ width: 1, height: 22, background: "#e0cba0" }} />
-          <button onClick={undo} disabled={!canUndo} aria-label="undo" title="Undo"
-            style={{ ...toolBtn(false), opacity: canUndo ? 1 : 0.4, cursor: canUndo ? "pointer" : "default" }}>↩️</button>
-          <button onClick={() => clearCanvas(true)} aria-label="clear" title="Start over" style={toolBtn(false)}>🗑️</button>
-        </div>
+              <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
+                {PALETTE.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => { setColor(c); setErasing(false); }}
+                    aria-label={`color ${c}`}
+                    style={{
+                      width: 24, height: 24, borderRadius: "50%", background: c,
+                      border: color === c && !erasing ? "3px solid #4a3a2c" : "2px solid #fff", cursor: "pointer",
+                    }}
+                  />
+                ))}
+                <button onClick={() => setErasing(true)} aria-label="eraser" title="Eraser" style={toolBtn(erasing)}>🩹</button>
+              </div>
+
+              <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
+                {(Object.keys(BRUSHES) as BrushKey[]).map((k) => (
+                  <button
+                    key={k}
+                    onClick={() => { setBrush(k); setErasing(false); }}
+                    aria-label={BRUSHES[k].name}
+                    title={BRUSHES[k].name}
+                    style={toolBtn(brush === k && !erasing)}
+                  >{BRUSHES[k].emoji}</button>
+                ))}
+                <span style={{ width: 1, height: 22, background: "#e0cba0" }} />
+                {SIZES.map((s) => (
+                  <button
+                    key={s.value}
+                    onClick={() => setSize(s.value)}
+                    aria-label={`${s.label} brush`}
+                    title={s.label}
+                    style={toolBtn(size === s.value)}
+                  >
+                    <span style={{ width: Math.min(s.value / 2.6, 16), height: Math.min(s.value / 2.6, 16), minWidth: 4, minHeight: 4, borderRadius: "50%", background: "#4a3a2c", display: "block" }} />
+                  </button>
+                ))}
+                <span style={{ width: 1, height: 22, background: "#e0cba0" }} />
+                <button onClick={undo} disabled={!canUndo} aria-label="undo" title="Undo"
+                  style={{ ...toolBtn(false), opacity: canUndo ? 1 : 0.4, cursor: canUndo ? "pointer" : "default" }}>↩️</button>
+                <button onClick={() => clearCanvas(true)} aria-label="clear" title="Start over" style={toolBtn(false)}>🗑️</button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <button
+          onClick={() => setToolsOpen((o) => !o)}
+          aria-label={toolsOpen ? "Hide tools" : "Show tools"}
+          style={{
+            display: "flex", alignItems: "center", gap: 8, padding: "8px 16px", borderRadius: 999,
+            background: "#fff", border: "2px solid #e0cba0", boxShadow: "var(--shadow-soft)",
+            fontWeight: 700, color: "var(--ink)", cursor: "pointer",
+          }}
+        >
+          {toolsOpen ? "✕ Close" : (
+            <>
+              <span style={{ width: 18, height: 18, borderRadius: "50%", background: erasing ? "#fff" : color, border: "2px solid #fff", boxShadow: "0 0 0 1px #e0cba0" }} />
+              🎨 Tools
+            </>
+          )}
+        </button>
       </div>
     </div>
   );

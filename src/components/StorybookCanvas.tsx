@@ -21,6 +21,9 @@ type Props = {
   drawDescription: string;
   placingDrawing: string | null;
   sparkleKey: string | number | null;
+  characters: string[];
+  pageNumber: number;
+  reveal: boolean;
   onOpenDraw: () => void;
   onStartPlacement: () => void;
   onCancelDraw: () => void;
@@ -46,6 +49,9 @@ export function StorybookCanvas({
   drawDescription,
   placingDrawing,
   sparkleKey,
+  characters,
+  pageNumber,
+  reveal,
   onOpenDraw,
   onStartPlacement,
   onCancelDraw,
@@ -57,11 +63,15 @@ export function StorybookCanvas({
   speaking,
 }: Props) {
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, background: "var(--cream)" }}>
-      <div
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
         style={{
-          display: "flex", width: "min(1100px, 96vw)", background: "#fff", borderRadius: 16,
-          boxShadow: "0 20px 60px rgba(0,0,0,0.15)", overflow: "hidden",
+          display: "flex", width: "min(1100px, 96vw)", background: "#fff", borderRadius: 20,
+          boxShadow: "var(--shadow-lift), 0 0 0 8px #fff, 0 0 0 10px rgba(224,203,160,0.55)",
+          overflow: "hidden",
         }}
       >
         {/* left page: the main visual */}
@@ -102,13 +112,60 @@ export function StorybookCanvas({
               onCancel={onCancelPlacement}
             />
           )}
+
+          {/* "your drawing came to life" magic moment */}
+          {reveal && <div className="shimmer-sweep" style={{ zIndex: 7 }} />}
+          <AnimatePresence>
+            {reveal && (
+              <motion.div
+                key="reveal-toast"
+                className="no-print"
+                initial={{ opacity: 0, y: -12, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -12 }}
+                style={{
+                  position: "absolute", top: 12, left: "50%", transform: "translateX(-50%)", zIndex: 9,
+                  background: "var(--crayon)", color: "#fff", padding: "8px 16px", borderRadius: 999,
+                  fontWeight: 700, fontSize: 14, boxShadow: "var(--shadow-soft)", whiteSpace: "nowrap",
+                }}
+              >
+                🪄 your drawing came to life!
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {pageNumber > 0 && (
+            <div
+              className="font-display"
+              style={{
+                position: "absolute", bottom: 10, right: 12, zIndex: 5,
+                minWidth: 26, height: 26, padding: "0 8px", borderRadius: 999,
+                background: "rgba(255,253,245,0.9)", color: "var(--ink)", fontSize: 13, fontWeight: 700,
+                display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
+              }}
+            >
+              {pageNumber}
+            </div>
+          )}
         </div>
 
         {/* spine */}
-        <div style={{ width: 3, background: "linear-gradient(#e0cba0,#f3e6c6)" }} />
+        <div style={{ width: 6, background: "linear-gradient(90deg,rgba(0,0,0,0.08),transparent 30%,transparent 70%,rgba(0,0,0,0.08)), linear-gradient(#e6d2a8,#f3e6c6)" }} />
 
         {/* right page: narration */}
-        <div style={{ flex: 1, aspectRatio: "1 / 1", position: "relative", overflowY: "auto" }}>
+        <div style={{ flex: 1, aspectRatio: "1 / 1", position: "relative", display: "flex", flexDirection: "column", minWidth: 0 }}>
+          {characters.length > 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", padding: "12px 16px 0", flexShrink: 0 }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#a08b6a" }}>✨ cast</span>
+              {characters.slice(0, 5).map((c, i) => (
+                <span key={c} className="no-print" style={{ fontSize: 12, fontWeight: 600, color: "var(--ink)", background: [ "var(--sunny)", "var(--sky)", "var(--mint)", "var(--rose)", "var(--grape)" ][i % 5], padding: "3px 10px", borderRadius: 999 }}>
+                  {c}
+                </span>
+              ))}
+              {characters.length > 5 && <span style={{ fontSize: 12, color: "#a08b6a" }}>+{characters.length - 5}</span>}
+            </div>
+          )}
+          <div style={{ flex: 1, position: "relative", overflowY: "auto", minHeight: 0 }} className="book-page">
           <AnimatePresence mode="wait">
             <motion.div
               key={current?.narration ?? "start"}
@@ -130,8 +187,9 @@ export function StorybookCanvas({
               />
             </motion.div>
           </AnimatePresence>
+          </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* drawing drawer (slides up from the bottom) */}
       <AnimatePresence>
@@ -144,13 +202,19 @@ export function StorybookCanvas({
             exit={{ y: "100%" }}
             transition={{ type: "tween", duration: 0.3 }}
             style={{
-              position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 20, background: "#fff",
-              borderTopLeftRadius: 24, borderTopRightRadius: 24, boxShadow: "0 -12px 40px rgba(0,0,0,0.25)",
-              padding: 16, display: "flex", flexDirection: "column", alignItems: "center", gap: 12,
+              position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 20,
+              background: "var(--paper)",
+              borderTopLeftRadius: 28, borderTopRightRadius: 28, boxShadow: "0 -12px 50px rgba(74,58,44,0.28)",
+              borderTop: "1px solid rgba(224,203,160,0.6)",
+              padding: "18px 16px", display: "flex", flexDirection: "column", alignItems: "center", gap: 12,
             }}
           >
-            <div style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)" }}>
-              Draw something to add to your picture ✏️
+            <div style={{ width: 44, height: 5, borderRadius: 999, background: "rgba(224,203,160,0.9)", marginBottom: 2 }} />
+            <div className="font-display" style={{ fontSize: 19, fontWeight: 700, color: "var(--ink)" }}>
+              Draw something to add to your story ✏️
+            </div>
+            <div style={{ fontSize: 13, color: "#8a7860", marginTop: -6 }}>
+              Tap 🎨 for colors, brushes &amp; sizes — then place it in the scene.
             </div>
             <div
               className="book-page"
