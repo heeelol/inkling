@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import { LoadingIndicator } from "./LoadingIndicator";
+import { activeTokenIndex, tokenize, isSpace } from "@/lib/karaoke";
 import type { Beat } from "@/lib/storyState";
 
 type Props = {
@@ -18,22 +19,14 @@ type Props = {
 };
 
 // Karaoke-style narration: which word is being read right now, based on how far
-// through the audio we are (weighted by word length).
+// through the audio we are (word-length weighted; math lives in lib/karaoke).
 function KaraokeText({ text, progress }: { text: string; progress: number }) {
-  const tokens = text.split(/(\s+)/);
-  const totalChars = text.replace(/\s+/g, "").length || 1;
-  const target = progress * totalChars;
-  let seen = 0;
-  let active = -1;
-  for (let i = 0; i < tokens.length; i++) {
-    if (/^\s+$/.test(tokens[i])) continue;
-    seen += tokens[i].length;
-    if (seen >= target) { active = i; break; }
-  }
+  const tokens = tokenize(text);
+  const active = activeTokenIndex(text, progress);
   return (
     <span>
       {tokens.map((tk, i) => {
-        if (/^\s+$/.test(tk)) return <span key={i}>{tk}</span>;
+        if (isSpace(tk)) return <span key={i}>{tk}</span>;
         const isActive = i === active;
         const isPast = active !== -1 && i < active;
         return (

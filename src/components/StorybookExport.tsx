@@ -25,7 +25,9 @@ export function StorybookExport({ state }: { state: StoryState }) {
         state.beats.map(async (b) => {
           try {
             if (!b.imageUrl && !b.drawingUrl) return null;
-            return await compositeScene(b.imageUrl ?? null, b.drawingUrl ?? null, W, H, b.drawingPlacement);
+            // Skip the overlay when the AI already painted the sketch into the page.
+            const overlay = b.drawingIntegrated ? null : b.drawingUrl ?? null;
+            return await compositeScene(b.imageUrl ?? null, overlay, W, H, b.drawingPlacement);
           } catch {
             return b.imageUrl ?? null;
           }
@@ -133,6 +135,32 @@ export function StorybookExport({ state }: { state: StoryState }) {
           <div className="font-display" style={{ alignSelf: "flex-end", fontSize: 13, fontWeight: 700, color: "#a08b6a" }}>— {i + 1} —</div>
         </div>
       ))}
+
+      {/* sketchbook: the child's raw drawings next to the pages they became */}
+      {state.beats.some((b) => b.drawingUrl) && (
+        <div className="book-page" style={{ width: "min(680px, 94vw)", background: "#fff", borderRadius: 18, boxShadow: "var(--shadow-soft)", padding: 28, display: "flex", flexDirection: "column", gap: 18 }}>
+          <div style={{ textAlign: "center" }}>
+            <h2 className="font-display" style={{ fontSize: 28, color: "var(--crayon)", margin: 0 }}>✏️ The Sketchbook</h2>
+            <p style={{ color: "#8a7860", margin: "4px 0 0", fontSize: 14 }}>Every masterpiece starts with a doodle — here&apos;s what you drew, and what it became.</p>
+          </div>
+          {state.beats.map((b, i) =>
+            b.drawingUrl ? (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={b.drawingUrl} alt={`sketch for page ${i + 1}`} style={{ width: "38%", aspectRatio: "1", objectFit: "contain", borderRadius: 12, background: "var(--cream)", border: "2px dashed #e0cba0" }} />
+                <span style={{ fontSize: 26 }} aria-hidden>➜</span>
+                {scenes[i] ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={scenes[i] as string} alt={`page ${i + 1}`} style={{ width: "38%", borderRadius: 12 }} />
+                ) : (
+                  <div style={{ width: "38%", aspectRatio: "1", borderRadius: 12, background: "var(--cream)" }} />
+                )}
+                <span className="font-display" style={{ marginLeft: "auto", fontSize: 13, fontWeight: 700, color: "#a08b6a", whiteSpace: "nowrap" }}>page {i + 1}</span>
+              </div>
+            ) : null
+          )}
+        </div>
+      )}
 
       <p className="no-print" style={{ color: "#a08b6a", fontSize: 14 }}>The End ✨ made with Inkling</p>
     </div>

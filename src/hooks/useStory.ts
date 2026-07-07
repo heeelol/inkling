@@ -139,18 +139,22 @@ export function useStory() {
       // Hand the previous page to the model so characters/setting stay consistent.
       const previousScene = base.beats[base.beats.length - 1]?.imageUrl ?? null;
 
+      // One retry: image generation is the flakiest call and a blank page is
+      // the worst outcome for a child mid-story.
       let imageDataUrl: string | null = null;
-      try {
-        const r = await postJson("/api/illustrate", {
-          prompt: story.imagePrompt,
-          drawingDataUrl: drawingReference,
-          drawingDescription,
-          sceneDataUrl: previousScene,
-        });
-        const j = (await r.json()) as { imageDataUrl?: string };
-        imageDataUrl = j.imageDataUrl ?? null;
-      } catch {
-        imageDataUrl = null;
+      for (let attempt = 0; attempt < 2 && !imageDataUrl; attempt++) {
+        try {
+          const r = await postJson("/api/illustrate", {
+            prompt: story.imagePrompt,
+            drawingDataUrl: drawingReference,
+            drawingDescription,
+            sceneDataUrl: previousScene,
+          });
+          const j = (await r.json()) as { imageDataUrl?: string };
+          imageDataUrl = j.imageDataUrl ?? null;
+        } catch {
+          imageDataUrl = null;
+        }
       }
 
       // The AI scene already contains the drawing. Only fall back to pasting the
@@ -173,8 +177,11 @@ export function useStory() {
         choices: story.choices ?? [],
         imagePrompt: story.imagePrompt ?? "",
         imageUrl: imageDataUrl ?? undefined,
-        drawingUrl: integrated ? undefined : (drawingPng ?? undefined),
-        drawingPlacement: integrated ? undefined : (placement ?? undefined),
+        // Always keep the raw sketch — the export's "Sketchbook" shows it next
+        // to the page it became; drawingIntegrated tells us not to overlay it.
+        drawingUrl: drawingPng ?? undefined,
+        drawingPlacement: placement ?? undefined,
+        drawingIntegrated: integrated || undefined,
       };
       const delta = {
         newCharacters: story.newCharacters ?? [],

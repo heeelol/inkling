@@ -5,6 +5,8 @@ export type DrawnItem = { label: string; turn: number };
 export type Beat = {
   narration: string; choices: Choice[]; imagePrompt: string;
   imageUrl?: string; drawingUrl?: string; drawingPlacement?: Placement;
+  /** true when the AI repainted the sketch into imageUrl (so don't overlay it again) */
+  drawingIntegrated?: boolean;
 };
 export type StateDelta = { newCharacters?: string[]; newDrawnItems?: DrawnItem[] };
 

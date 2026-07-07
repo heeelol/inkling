@@ -1,28 +1,39 @@
 # Inkling 🖍️📖
 
-**Draw yourself into the story.** An illustrated, AI-driven choose-your-own-adventure for kids and families where the child both *chooses* what happens next and *draws* elements directly into the world — and the story and art react to their drawing.
+**Draw yourself into the story.** An AI picture book where a child both *chooses* what happens next and *draws* elements straight into the world — and the story, the art, the music, and the narration all react.
 
-## What it does
-- Pick a story seed (or dream up your own).
-- Each turn: read (or hear) a short storybook beat, illustrated in a warm crayon style.
-- Make a choice **or draw** something onto the scene — a friend, a bridge, a key. A vision model reads your drawing and the story weaves it in; your real crayon marks become part of the picture.
-- Finish anytime to get a printable illustrated **storybook** of your whole adventure.
+## 💡 The idea
+Kids love making up stories, but the blank page is scary — and most "AI story" apps make the child a passive listener. Inkling flips that: the child is the **author and the illustrator**. Their wobbly crayon doodle isn't pasted on top of the art; the AI *repaints their idea into the illustration*, keeping its shape, colors, and position. The moment "your drawing came to life! 🪄" is the whole product.
 
-## Why
-It lets kids (and grown-ups who "can't draw or write") create a beautiful, personal, illustrated story and feel like its author and artist. Every generated passage and image passes a moderation guardrail to keep it kid-safe.
+## ⚙️ How it works
+1. **Pick a seed** (or dream up your own premise) → the storyteller model writes a short beat with 2–3 choices.
+2. **Read or listen** — each beat is auto-narrated (OpenAI TTS) with karaoke word-highlighting, over a generative Web-Audio soundscape that brightens while the AI is "thinking/painting."
+3. **Choose or draw.** The drawing canvas has crayon/marker/pencil brushes, 4 sizes, undo, and a pop-up tool tray. You place and resize your drawing as a sticker on the scene, and can describe it in your own words (else a vision model interprets it).
+4. **The magic:** the sketch (at its placed position) + the *previous page* are sent to `gpt-image-1`'s edit endpoint — so your idea is painted into the new illustration *and* recurring characters stay visually consistent page to page.
+5. **Finish anytime** → an AI-titled, printable storybook with a cover, page numbers, a shareable cover image… and a **Sketchbook appendix** showing each raw doodle beside the painted page it became.
 
-## Tech
-- Next.js 16 (App Router) + React 19 + TypeScript + Tailwind v4
-- Motion (page turns), perfect-freehand (crayon canvas)
-- OpenAI: story (structured outputs), vision (reads drawings), `gpt-image-1` (crayon backdrops), moderation (kid-safety), TTS (read-aloud)
+## ✨ Main features
+- Drawing → **AI-integrated illustration** (image *edits*, not overlays), with placement control
+- **Page-to-page visual continuity** via previous-scene reference
+- Auto **voice acting** with word-by-word karaoke highlight; music & voice toggles
+- Generative, state-reactive **soundscape + SFX** (pure Web Audio, zero assets)
+- Kid-safe: every prompt passes a **moderation guardrail**; gentle redirects
+- Polished storybook UI: page cross-fades, sparkle reveals, cast chips, mobile layout
+- Export: AI-generated title, print/PDF, native **share sheet** with a rendered cover PNG, sketch-vs-page appendix
 
-## Run locally
-1. `npm install`
-2. Create `.env.local` with `OPENAI_API_KEY=sk-...`
-3. `npm run dev` and open http://localhost:3000
+## 🧰 Technology stack
+- **Next.js 16** (App Router, Turbopack) · **React 19** · TypeScript · Tailwind v4
+- **Motion** (animations) · **perfect-freehand** (pressure-sensitive strokes) · Web Audio API
+- **OpenAI**: gpt-4o (story w/ structured outputs + vision + titles), `gpt-image-1` (generate + multi-image **edit**), `gpt-4o-mini-tts`, omni-moderation
+- Vitest unit tests (`npm test`) — story state, compositing, moderation, karaoke math
 
-## Scripts
-- `npm run dev` — dev server
-- `npm run build` — production build
-- `npm test` — unit tests (Vitest)
-- `npm run lint` — lint
+## 👧 Intended audience
+Children ~4–9 and their parents/teachers: a creative-literacy tool that turns "I can't draw/write" into a finished, printable book the child authored.
+
+## 🚀 Run locally
+```bash
+npm install
+echo OPENAI_API_KEY=sk-... > .env.local
+npm run dev   # http://localhost:3000
+```
+`npm test` runs the unit suite; `npm run build` makes the production build (deployed on Vercel).
