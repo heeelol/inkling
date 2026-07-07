@@ -1,7 +1,7 @@
 "use client";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { StoryState, Beat, initialState, applyDelta, summarize } from "@/lib/storyState";
-import { compositeScene } from "@/lib/composite";
+import { compositeScene, type Placement } from "@/lib/composite";
 
 const STORAGE_KEY = "inkling";
 const SCENE_W = 1024;
@@ -73,19 +73,35 @@ export function useStory() {
   }, []);
 
   const takeTurn = useCallback(
-    async ({ action, drawingPng }: { action: string; drawingPng?: string | null }) => {
+    async ({
+      action,
+      drawingPng,
+      drawingDescription: providedDescription,
+      placement,
+    }: {
+      action: string;
+      drawingPng?: string | null;
+      drawingDescription?: string | null;
+      placement?: Placement | null;
+    }) => {
       const base = stateRef.current;
       if (!base) return;
       setUi((u) => ({ ...u, loading: true, phase: "thinking", message: null }));
 
       let drawingDescription: string | undefined;
       if (drawingPng) {
-        try {
-          const r = await postJson("/api/interpret-drawing", { imageDataUrl: drawingPng });
-          const j = (await r.json()) as { description?: string };
-          drawingDescription = j.description;
-        } catch {
-          drawingDescription = "your drawing";
+        // Prefer the child's own words; only ask the vision model when they
+        // didn't describe the drawing themselves.
+        if (providedDescription) {
+          drawingDescription = providedDescription;
+        } else {
+          try {
+            const r = await postJson("/api/interpret-drawing", { imageDataUrl: drawingPng });
+            const j = (await r.json()) as { description?: string };
+            drawingDescription = j.description;
+          } catch {
+            drawingDescription = "your drawing";
+          }
         }
       }
 
@@ -118,7 +134,7 @@ export function useStory() {
 
       let sceneUrl: string | undefined;
       try {
-        sceneUrl = await compositeScene(imageDataUrl, drawingPng ?? null, SCENE_W, SCENE_H);
+        sceneUrl = await compositeScene(imageDataUrl, drawingPng ?? null, SCENE_W, SCENE_H, placement);
       } catch {
         sceneUrl = imageDataUrl ?? undefined;
       }
@@ -130,6 +146,7 @@ export function useStory() {
         imagePrompt: story.imagePrompt ?? "",
         imageUrl: imageDataUrl ?? undefined,
         drawingUrl: drawingPng ?? undefined,
+        drawingPlacement: placement ?? undefined,
       };
       const delta = {
         newCharacters: story.newCharacters ?? [],

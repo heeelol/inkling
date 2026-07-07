@@ -2,7 +2,10 @@
 import type { RefObject } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { DrawingLayer, type DrawingLayerHandle } from "./DrawingLayer";
+import { DrawingPlacer } from "./DrawingPlacer";
 import { NarrationPanel } from "./NarrationPanel";
+import { LoadingIndicator } from "./LoadingIndicator";
+import type { Placement } from "@/lib/composite";
 import type { Beat } from "@/lib/storyState";
 
 type Props = {
@@ -14,9 +17,14 @@ type Props = {
   hasStagedDrawing: boolean;
   drawingRef: RefObject<DrawingLayerHandle | null>;
   drawerOpen: boolean;
+  drawDescription: string;
+  placingDrawing: string | null;
   onOpenDraw: () => void;
-  onIntegrate: () => void;
+  onStartPlacement: () => void;
   onCancelDraw: () => void;
+  onDrawDescriptionChange: (v: string) => void;
+  onConfirmPlacement: (p: Placement) => void;
+  onCancelPlacement: () => void;
   onAction: (action: string) => void;
   speak: (t: string) => void;
   speaking: boolean;
@@ -33,9 +41,14 @@ export function StorybookCanvas({
   hasStagedDrawing,
   drawingRef,
   drawerOpen,
+  drawDescription,
+  placingDrawing,
   onOpenDraw,
-  onIntegrate,
+  onStartPlacement,
   onCancelDraw,
+  onDrawDescriptionChange,
+  onConfirmPlacement,
+  onCancelPlacement,
   onAction,
   speak,
   speaking,
@@ -48,33 +61,30 @@ export function StorybookCanvas({
           boxShadow: "0 20px 60px rgba(0,0,0,0.15)", overflow: "hidden",
         }}
       >
-        {/* left page: the main visual (view only) */}
+        {/* left page: the main visual */}
         <div
           style={{
             flex: 1, aspectRatio: "1 / 1", position: "relative",
             background: displayScene ? `center/cover no-repeat url(${displayScene})` : "var(--cream)",
           }}
         >
-          {phase === "illustrating" && (
-            <div
-              style={{
-                position: "absolute", top: 10, left: 10, background: "rgba(255,253,245,0.92)",
-                borderRadius: 999, padding: "4px 12px", fontSize: 13, fontWeight: 700, color: "var(--ink)",
-                boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
-              }}
-            >
-              🖍️ painting…
-            </div>
-          )}
-          {hasStagedDrawing && (
+          {phase === "illustrating" && <LoadingIndicator variant="badge" emoji="🖍️" label="painting" />}
+          {hasStagedDrawing && !placingDrawing && (
             <div
               style={{
                 position: "absolute", bottom: 10, left: 10, background: "var(--sky)",
-                borderRadius: 999, padding: "4px 12px", fontSize: 12, fontWeight: 700, color: "var(--ink)",
+                borderRadius: 999, padding: "4px 12px", fontSize: 12, fontWeight: 700, color: "var(--ink)", zIndex: 5,
               }}
             >
               ✏️ your drawing is in the scene
             </div>
+          )}
+          {placingDrawing && (
+            <DrawingPlacer
+              drawingUrl={placingDrawing}
+              onConfirm={onConfirmPlacement}
+              onCancel={onCancelPlacement}
+            />
           )}
         </div>
 
@@ -135,6 +145,13 @@ export function StorybookCanvas({
             >
               <DrawingLayer ref={drawingRef} width={SCENE} height={SCENE} />
             </div>
+            <input
+              value={drawDescription}
+              onChange={(e) => onDrawDescriptionChange(e.target.value)}
+              placeholder="Tell me what you drew (optional)…"
+              maxLength={120}
+              style={{ width: "min(360px, 78vw)", padding: "10px 14px", borderRadius: 12, border: "2px solid #e0cba0", fontSize: 15 }}
+            />
             <div style={{ display: "flex", gap: 10 }}>
               <button
                 onClick={onCancelDraw}
@@ -143,10 +160,10 @@ export function StorybookCanvas({
                 Cancel
               </button>
               <button
-                onClick={onIntegrate}
+                onClick={onStartPlacement}
                 style={{ background: "var(--crayon)", color: "#fff", border: "none", borderRadius: 14, padding: "10px 24px", fontWeight: 700, cursor: "pointer" }}
               >
-                ✨ Add to picture
+                Place it →
               </button>
             </div>
           </motion.div>

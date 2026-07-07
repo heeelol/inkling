@@ -1,5 +1,14 @@
 export const CREAM = "#fffdf5";
 
+/**
+ * Where the child's drawing sits on the scene, in normalized coordinates:
+ * (x, y) is the CENTER of the drawing as a fraction of the scene [0..1],
+ * scale is its width as a fraction of the scene width [0..1] (drawings are square).
+ */
+export type Placement = { x: number; y: number; scale: number };
+
+export const DEFAULT_PLACEMENT: Placement = { x: 0.5, y: 0.5, scale: 0.65 };
+
 export function pickBackdrop(url: string | null): string {
   return url ?? "CREAM_FALLBACK";
 }
@@ -25,7 +34,8 @@ export async function compositeScene(
   backdropUrl: string | null,
   drawingUrl: string | null,
   w: number,
-  h: number
+  h: number,
+  placement?: Placement | null
 ): Promise<string> {
   if (typeof document === "undefined") throw new Error("compositeScene must run in the browser");
   const canvas = document.createElement("canvas");
@@ -45,7 +55,12 @@ export async function compositeScene(
 
   if (drawingUrl) {
     const drawing = await loadImage(drawingUrl);
-    ctx.drawImage(drawing, 0, 0, w, h);
+    if (placement) {
+      const size = placement.scale * w;
+      ctx.drawImage(drawing, placement.x * w - size / 2, placement.y * h - size / 2, size, size);
+    } else {
+      ctx.drawImage(drawing, 0, 0, w, h);
+    }
   }
 
   return canvas.toDataURL("image/png");

@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { LoadingIndicator } from "./LoadingIndicator";
 import type { Beat } from "@/lib/storyState";
 
 type Props = {
@@ -59,9 +60,9 @@ export function NarrationPanel({ current, phase, loading, message, onAction, onD
 
           <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
             {loading ? (
-              <p style={{ color: "#a08b6a", fontWeight: 600 }}>
-                {phase === "illustrating" ? "🖍️ painting your scene…" : "✨ thinking…"}
-              </p>
+              phase === "illustrating"
+                ? <LoadingIndicator emoji="🖍️" label="painting your scene" />
+                : <LoadingIndicator emoji="✨" label="thinking" />
             ) : (
               <>
                 {current.choices.map((c) => (

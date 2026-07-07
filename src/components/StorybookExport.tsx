@@ -16,7 +16,7 @@ export function StorybookExport({ state }: { state: StoryState }) {
         state.beats.map(async (b) => {
           try {
             if (!b.imageUrl && !b.drawingUrl) return null;
-            return await compositeScene(b.imageUrl ?? null, b.drawingUrl ?? null, W, H);
+            return await compositeScene(b.imageUrl ?? null, b.drawingUrl ?? null, W, H, b.drawingPlacement);
           } catch {
             return b.imageUrl ?? null;
           }

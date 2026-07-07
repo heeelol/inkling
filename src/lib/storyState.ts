@@ -1,6 +1,11 @@
+import type { Placement } from "./composite";
+
 export type Choice = { id: string; label: string };
 export type DrawnItem = { label: string; turn: number };
-export type Beat = { narration: string; choices: Choice[]; imagePrompt: string; imageUrl?: string; drawingUrl?: string };
+export type Beat = {
+  narration: string; choices: Choice[]; imagePrompt: string;
+  imageUrl?: string; drawingUrl?: string; drawingPlacement?: Placement;
+};
 export type StateDelta = { newCharacters?: string[]; newDrawnItems?: DrawnItem[] };
 
 export type StoryState = {

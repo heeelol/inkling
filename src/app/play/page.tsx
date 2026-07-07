@@ -6,7 +6,7 @@ import { useSpeech } from "@/hooks/useSpeech";
 import { StorybookCanvas } from "@/components/StorybookCanvas";
 import { StorybookExport } from "@/components/StorybookExport";
 import type { DrawingLayerHandle } from "@/components/DrawingLayer";
-import { compositeScene } from "@/lib/composite";
+import { compositeScene, type Placement } from "@/lib/composite";
 
 const SCENE = 1024;
 
@@ -18,7 +18,11 @@ function PlayInner() {
   const started = useRef(false);
   const [finished, setFinished] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawDescription, setDrawDescription] = useState("");
+  const [placingDrawing, setPlacingDrawing] = useState<string | null>(null);
   const [stagedDrawing, setStagedDrawing] = useState<string | null>(null);
+  const [stagedPlacement, setStagedPlacement] = useState<Placement | null>(null);
+  const [stagedDescription, setStagedDescription] = useState<string | null>(null);
   const [sceneOverride, setSceneOverride] = useState<string | null>(null);
 
   useEffect(() => {
@@ -32,33 +36,59 @@ function PlayInner() {
 
   const cancelDraw = () => {
     drawingRef.current?.clear();
+    setDrawDescription("");
     setDrawerOpen(false);
   };
 
-  // Composite the current sketch onto the visible scene now (no story turn),
-  // and stage it so the next chosen action sends it to the story.
-  const integrate = async () => {
+  // Leave the drawer and pick the drawing up as a movable sticker on the scene.
+  const startPlacement = () => {
     const png = drawingRef.current?.exportPng() ?? null;
     if (!png) {
+      setDrawDescription("");
       setDrawerOpen(false);
       return;
     }
+    setPlacingDrawing(png);
+    setDrawerOpen(false);
+  };
+
+  const cancelPlacement = () => {
+    setPlacingDrawing(null);
+    setDrawDescription("");
+    drawingRef.current?.clear();
+  };
+
+  // Stamp the sticker into the visible scene at the chosen spot/size, and stage
+  // it (with its placement + description) for the next chosen action.
+  const confirmPlacement = async (placement: Placement) => {
+    const png = placingDrawing;
+    if (!png) return;
     const base = sceneOverride ?? current?.sceneUrl ?? current?.imageUrl ?? null;
     try {
-      const merged = await compositeScene(base, png, SCENE, SCENE);
+      const merged = await compositeScene(base, png, SCENE, SCENE, placement);
       setSceneOverride(merged);
     } catch {
       /* keep the previous scene if compositing fails; drawing is still staged */
     }
     setStagedDrawing(png);
+    setStagedPlacement(placement);
+    setStagedDescription(drawDescription.trim() || null);
+    setPlacingDrawing(null);
+    setDrawDescription("");
     drawingRef.current?.clear();
-    setDrawerOpen(false);
   };
 
   const handleAction = async (action: string) => {
     if (loading) return;
-    await takeTurn({ action, drawingPng: stagedDrawing });
+    await takeTurn({
+      action,
+      drawingPng: stagedDrawing,
+      drawingDescription: stagedDescription,
+      placement: stagedPlacement,
+    });
     setStagedDrawing(null);
+    setStagedPlacement(null);
+    setStagedDescription(null);
     setSceneOverride(null);
     drawingRef.current?.clear();
   };
@@ -76,9 +106,14 @@ function PlayInner() {
         hasStagedDrawing={stagedDrawing !== null}
         drawingRef={drawingRef}
         drawerOpen={drawerOpen}
+        drawDescription={drawDescription}
+        placingDrawing={placingDrawing}
         onOpenDraw={() => setDrawerOpen(true)}
-        onIntegrate={integrate}
+        onStartPlacement={startPlacement}
         onCancelDraw={cancelDraw}
+        onDrawDescriptionChange={setDrawDescription}
+        onConfirmPlacement={confirmPlacement}
+        onCancelPlacement={cancelPlacement}
         onAction={handleAction}
         speak={speak}
         speaking={speaking}
